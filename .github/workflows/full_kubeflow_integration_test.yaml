@@ -142,13 +142,13 @@ jobs:
 
     - name: V1 Pipeline Test
       run: |
-        pip3 install "kfp>=1.8.23,<2.0.0"
+        pip3 install "kfp>=1.8.24,<2.0.0"
         TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
         python3 tests/pipeline_v1_test.py "${TOKEN}" "${KF_PROFILE}"
 
     - name: V2 Pipeline Test
       run: |
-        pip3 install -U "kfp>=2.16.0" kfp-kubernetes
+        pip3 install -U "kfp>=2.16.1" kfp-kubernetes
         TOKEN="$(kubectl -n $KF_PROFILE create token default-editor)"
         python3 tests/pipeline_v2_test.py run_pipeline "${TOKEN}" "${KF_PROFILE}"
 
