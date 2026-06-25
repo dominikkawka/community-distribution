@@ -5,8 +5,8 @@ source "${SCRIPT_DIRECTORY}/library.sh"
 setup_error_handling
 COMPONENT_NAME="istio"
 REPOSITORY_NAME="istio/istio"
-COMMIT="1.30.1"
-PREVIOUS_COMMIT="1.30.0"
+COMMIT="1.30.2"
+PREVIOUS_COMMIT="1.30.1"
 SOURCE_DIRECTORY=${SOURCE_DIRECTORY:=/tmp/kubeflow-${COMPONENT_NAME}}
 BRANCH_NAME=${BRANCH_NAME:=synchronize-${COMPONENT_NAME}-manifests-${COMMIT?}}
 MANIFESTS_DIRECTORY=$(dirname $SCRIPT_DIRECTORY)
@@ -38,9 +38,9 @@ rm dump-ztunnel.yaml crd.yaml install.yaml cluster-local-gateway.yaml
 sed -i "s/\"tag\": \".*\"/\"tag\": \"$COMMIT\"/" "$ISTIO_DIRECTORY/istio-install/base/patches/istio-sidecar-injector-patch.yaml"
 # Normalize all remaining Istio version references from PREVIOUS_COMMIT to COMMIT.
 # This catches any version strings that istioctl generates using the previous release
-# (e.g. image tags, helm chart labels). Update PREVIOUS_COMMIT when bumping COMMIT.
-find "$ISTIO_DIRECTORY" -name "*.yaml" | xargs sed -i \
-  -e "s/${PREVIOUS_COMMIT}/$COMMIT/g"
+# (e.g. image tags, helm chart labels). Update PREVIOUS_COMMIT when needed.
+find "$ISTIO_DIRECTORY" -name "*.yaml" -exec sed -i \
+  -e "s/${PREVIOUS_COMMIT}/$COMMIT/g" {} +
 SOURCE_TEXT="\[.*\](https://github.com/${REPOSITORY_NAME}/releases/tag/.*)"
 DESTINATION_TEXT="\[$COMMIT\](https://github.com/${REPOSITORY_NAME}/releases/tag/$COMMIT)"
 update_readme "$MANIFESTS_DIRECTORY" "$SOURCE_TEXT" "$DESTINATION_TEXT"
