@@ -2,8 +2,8 @@
 
 ### Links
 - [Handbook](../kubeflow-community-distribution-release-handbook.md)
-- [Release Team](../release-26.10/release-team.md)
-- [Timeline](../release-26.10/README.md)
+- [Release Team](../release-26.03/release-team.md)
+- [Timeline](../release-26.03/README.md)
 
 ### Rules
 - Respectful, solution-oriented communication
