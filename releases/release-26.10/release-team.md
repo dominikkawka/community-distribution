@@ -1,0 +1,18 @@
+# Kubeflow AI Reference Platform 26.10 Release Team
+
+| **Role** | **Name (GitHub / Slack ID)** |
+|:---|:---|
+| **Release Manager** | Dominik Kawka (GitHub: [@dominikkawka](https://github.com/dominikkawka) / Slack: `Dominik Kawka`) |
+| **Release Manager Shadows** | Dhanisha Phadate (GitHub: [@dhanishaphadate](https://github.com/dhanishaphadate) / Slack: `Dhanisha Phadate`) <br> Artur Martins (GitHub: [@arturmartins](https://github.com/arturmartins) / Slack: `Artur Martins`) <br> Alyssa Goins (GitHub: [@alyssacgoins](https://github.com/alyssacgoins) / Slack: `Alyssa Goins`) |
+| **Product Manager** | Dhanisha Phadate (GitHub: [@dhanishaphadate](https://github.com/dhanishaphadate) / Slack: `Dhanisha Phadate`) |
+| **Training WG Liaison(s)** |  |
+| **Notebooks WG Liaison(s)** | Christian Heusel (GitHub: [@christian-heusel](https://github.com/christian-heusel) / Slack: `Christian Heusel`) |
+| **Kubeflow Community Distribution WG Liaison(s)** | Tarek Abouzeid (GitHub: [@tarekabouzeid](https://github.com/tarekabouzeid) / Slack: `Tarek Abouzeid`) |
+| **Pipelines WG Liaison(s)** | Alyssa Goins (GitHub: [@alyssacgoins](https://github.com/alyssacgoins) / Slack: `Alyssa Goins`) |
+| **Spark Operator (WG Data)** |  |
+| **Kubeflow Hub (WG Data)** | Adysen Rothman (GitHub: [@adysenrothman](https://github.com/adysenrothman) / Slack: `Adysen Rothman`) |
+| **KServe Liaison(s)** | Vraj Bhatt (GitHub: [@vrajjbhatt](https://github.com/vrajjbhatt) / Slack: `Vraj Bhatt`) |
+| **KDC Liaison(s)** | |
+
+- The definition of the release team roles and responsibilities can be found at [release handbook](../kubeflow-community-distribution-release-handbook.md)
+- The timeline for the release can be found [here](README.md).
