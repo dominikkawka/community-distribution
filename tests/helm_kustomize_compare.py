@@ -6,6 +6,17 @@ import json
 from typing import Dict, List, Tuple, Any
 import re
 
+CERT_MANAGER_KUBEFLOW_RESOURCES = {
+    ("ClusterIssuer", "kubeflow-self-signing-issuer"),
+    ("NetworkPolicy", "cert-manager-webhook"),
+    ("NetworkPolicy", "default-allow-same-namespace-cert-manager"),
+}
+
+CERT_MANAGER_KUBEFLOW_LABELS = {
+    "app.kubernetes.io/component",
+    "app.kubernetes.io/name",
+}
+
 
 def load_manifests(file_path: str) -> List[Dict]:
     """Load YAML manifests from file."""
@@ -44,7 +55,7 @@ def clean_helm_metadata(obj: Any, component: str = "katib") -> Any:
                         # Remove Helm-specific labels (component-specific logic)
                         cleaned_labels = {}
                         for label_key, label_value in meta_value.items():
-                            if component == "kserve-models-web-app":
+                            if component == "kserve-models-web-application":
                                 # More restrictive filtering for KServe
                                 if not label_key.startswith(
                                     ("helm.sh/", "app.kubernetes.io/managed-by")
@@ -129,6 +140,9 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
     # Clean Helm-specific metadata
     normalized = clean_helm_metadata(normalized, component)
 
+    if component == "cert-manager":
+        preserve_cert_manager_kubeflow_labels(manifest, normalized)
+
     # Normalize Kustomize hash references
     normalized = normalize_kustomize_refs(normalized)
 
@@ -184,6 +198,35 @@ def normalize_manifest(manifest: Dict, component: str = "katib") -> Dict:
     return remove_empty_values(normalized)
 
 
+def preserve_cert_manager_kubeflow_labels(original: Dict, normalized: Dict) -> None:
+    """Keep labels that are intentionally added by cert-manager's Kubeflow overlay."""
+    kind = original.get("kind", "")
+    name = original.get("metadata", {}).get("name", "")
+
+    if (kind, name) not in CERT_MANAGER_KUBEFLOW_RESOURCES:
+        return
+
+    labels = original.get("metadata", {}).get("labels", {})
+    preserved_labels = {
+        key: value
+        for key, value in labels.items()
+        if key in CERT_MANAGER_KUBEFLOW_LABELS
+    }
+
+    if preserved_labels:
+        normalized.setdefault("metadata", {}).setdefault("labels", {}).update(
+            preserved_labels
+        )
+
+
+def should_compare_manifest(manifest: Dict, component: str, scenario: str) -> bool:
+    """Select the resource subset owned by a comparison scenario."""
+    if component == "cert-manager" and manifest.get("kind") == "Namespace":
+        return False
+
+    return True
+
+
 def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     """Generate a unique key for the resource."""
     kind = manifest.get("kind", "Unknown")
@@ -193,8 +236,8 @@ def get_resource_key(manifest: Dict, component: str = "katib") -> str:
     if kind in ["Secret", "ConfigMap"]:
         name = re.sub(r"-[a-z0-9]{10}$", "", name)
 
-    # Include namespace in key only for Katib
-    if component == "katib" and namespace:
+    # Include namespace in key for components that render resources across multiple namespaces.
+    if component in ["katib", "cert-manager"] and namespace:
         return f"{kind}/{namespace}/{name}"
     else:
         return f"{kind}/{name}"
@@ -244,7 +287,7 @@ def get_expected_helm_extras(component: str, scenario: str) -> set:
         }
     elif component == "hub":
         return set()  # No extra resources in Helm for Model Registry
-    elif component == "kserve-models-web-app":
+    elif component == "kserve-models-web-application":
         return set()
     else:
         return set()
@@ -265,11 +308,15 @@ def compare_manifests(
     helm_resources = {}
 
     for manifest in kustomize_manifests:
+        if not should_compare_manifest(manifest, component, scenario):
+            continue
         normalized = normalize_manifest(manifest, component)
         key = get_resource_key(normalized, component)
         kustomize_resources[key] = normalized
 
     for manifest in helm_manifests:
+        if not should_compare_manifest(manifest, component, scenario):
+            continue
         normalized = normalize_manifest(manifest, component)
         key = get_resource_key(normalized, component)
         helm_resources[key] = normalized
@@ -321,7 +368,7 @@ if __name__ == "__main__":
         print(
             "Usage: python compare.py <kustomize_file> <helm_file> <component> <scenario> [namespace] [--verbose]"
         )
-        print("Components: katib, hub, kserve-models-web-app")
+        print("Components: katib, hub, kserve-models-web-application, cert-manager")
         sys.exit(1)
 
     kustomize_file = sys.argv[1]
@@ -332,9 +379,16 @@ if __name__ == "__main__":
         sys.argv[5] if len(sys.argv) > 5 and not sys.argv[5].startswith("--") else ""
     )
 
-    if component not in ["katib", "hub", "kserve-models-web-app"]:
+    if component not in [
+        "katib",
+        "hub",
+        "kserve-models-web-application",
+        "cert-manager",
+    ]:
         print(f"ERROR: Unknown component: {component}")
-        print("Supported components: katib, hub, kserve-models-web-app")
+        print(
+            "Supported components: katib, hub, kserve-models-web-application, cert-manager"
+        )
         sys.exit(1)
 
     success = compare_manifests(

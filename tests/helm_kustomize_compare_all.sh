@@ -4,15 +4,25 @@
 set -euo pipefail
 
 COMPONENT=${1:-"all"}
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+SCRIPT_DIRECTORY="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 
 # Define all scenarios for each component
 declare -A COMPONENT_SCENARIOS=(
     ["katib"]="standalone cert-manager external-db leader-election openshift standalone-postgres with-kubeflow"
     ["hub"]="base overlay-postgres overlay-db controller-manager controller-rbac controller-default controller-prometheus controller-network-policy ui-base ui-standalone ui-integrated ui-istio istio csi"
-    ["kserve-models-web-app"]="base kubeflow"
+    ["kserve-models-web-application"]="base kubeflow"
+    ["cert-manager"]="base kubeflow existing-cert-manager"
 )
+
+prepare_component() {
+    local component=$1
+
+    if [[ "$component" == "cert-manager" ]]; then
+        helm repo add jetstack https://charts.jetstack.io >/dev/null 2>&1 || helm repo update jetstack >/dev/null
+        helm dependency build "$ROOT_DIRECTORY/common/cert-manager/helm" >/dev/null
+    fi
+}
 
 test_component() {
     local component=$1
@@ -27,9 +37,11 @@ test_component() {
     
     declare -a passed_scenarios=()
     declare -a failed_scenarios=()
+
+    prepare_component "$component"
     
     for scenario in "${scenarios[@]}"; do
-        if "$SCRIPT_DIR/helm_kustomize_compare.sh" "$component" "$scenario"; then
+        if CERT_MANAGER_DEPENDENCIES_READY=true "$SCRIPT_DIRECTORY/helm_kustomize_compare.sh" "$component" "$scenario"; then
             passed_scenarios+=("$scenario")
         else
             echo "FAILED: $component/$scenario"
@@ -49,12 +61,12 @@ if [[ "$COMPONENT" == "all" ]]; then
     declare -a passed_components=()
     declare -a failed_components=()
     
-    for comp in katib hub kserve-models-web-app; do
-        if test_component "$comp"; then
-            passed_components+=("$comp")
+    for component in katib hub kserve-models-web-application cert-manager; do
+        if test_component "$component"; then
+            passed_components+=("$component")
         else
-            echo "FAILED: $comp"
-            failed_components+=("$comp")
+            echo "FAILED: $component"
+            failed_components+=("$component")
         fi
     done
     
@@ -76,7 +88,8 @@ elif [[ "$COMPONENT" == "help" ]] || [[ "$COMPONENT" == "--help" ]] || [[ "$COMP
     echo "  all                    Test all components"
     echo "  katib                  Test Katib scenarios"
     echo "  hub                    Test Hub / Model Registry scenarios"
-    echo "  kserve-models-web-app  Test KServe Models Web App scenarios"
+    echo "  kserve-models-web-application  Test KServe Models Web Application scenarios"
+    echo "  cert-manager           Test cert-manager wrapper scenarios"
     echo ""
     echo "Examples:"
     echo "  $0                     # Test all components"
@@ -96,7 +109,7 @@ elif [[ "${COMPONENT_SCENARIOS[$COMPONENT]:-}" ]]; then
     
 else
     echo "ERROR: Unknown component: $COMPONENT"
-    echo "Supported components: katib, hub, kserve-models-web-app, all"
+    echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, all"
     echo "Use '$0 help' for more information."
     exit 1
 fi 

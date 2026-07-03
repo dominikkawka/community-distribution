@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
     - experimental/helm/charts/**
+    - common/cert-manager/**
+    - scripts/synchronize-cert-manager-manifests.sh
     - tests/kustomize_install.sh
     - tests/helm_kustomize_compare.py
     - tests/helm_kustomize_compare.sh
@@ -32,11 +34,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyyaml
     - name: Install Helm
-      run: |
-        curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-        chmod 700 get_helm.sh
-        ./get_helm.sh
-        rm get_helm.sh
+      uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5
+      with:
+        version: v4.2.2
     - name: Install Kustomize
       run: ./tests/kustomize_install.sh
     - name: Run all scenarios comparison
