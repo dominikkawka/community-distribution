@@ -1,4 +1,4 @@
-# Kubeflow AI Reference Platform 26.10
+# Kubeflow Community Distribution 26.10
 
 ### Links
 
@@ -7,9 +7,9 @@
 - [Meeting Notes / Recordings](https://docs.google.com/document/d/1OUWifNf7hZ_QH3m1J3zjSUUk11yKUZnvom1BS2KxrUQ)
 - [Project Board (Private)](https://github.com/orgs/kubeflow/projects/84)
 - Contact
-  - [#kubeflow-platform](https://cloud-native.slack.com/archives/C073W572LA2) on slack
+  - [#kubeflow-community-distribution](https://cloud-native.slack.com/archives/C073W572LA2) on slack
   - [#kubeflow-release-team](https://cloud-native.slack.com/archives/C0ACZPHKR9N) on slack
-  - [@release-team](https://github.com/orgs/kubeflow/teams/release-team) on GitHub
+  - [@kubeflow/release-team](https://github.com/orgs/kubeflow/teams/release-team) on GitHub
 
 ### TL;DR
 
