@@ -1,11 +1,11 @@
-# Kubeflow AI Reference Platform 26.10 Release Team
+# Kubeflow Community Distribution 26.10 Release Team
 
 | **Role** | **Name (GitHub / Slack ID)** |
 |:---|:---|
 | **Release Manager** | Dominik Kawka (GitHub: [@dominikkawka](https://github.com/dominikkawka) / Slack: `Dominik Kawka`) |
 | **Release Manager Shadows** | Dhanisha Phadate (GitHub: [@dhanishaphadate](https://github.com/dhanishaphadate) / Slack: `Dhanisha Phadate`) <br> Artur Martins (GitHub: [@arturmartins](https://github.com/arturmartins) / Slack: `Artur Martins`) <br> Alyssa Goins (GitHub: [@alyssacgoins](https://github.com/alyssacgoins) / Slack: `Alyssa Goins`) |
 | **Product Manager** | Dhanisha Phadate (GitHub: [@dhanishaphadate](https://github.com/dhanishaphadate) / Slack: `Dhanisha Phadate`) |
-| **Training WG Liaison(s)** |  |
+| **Training WG Liaison(s)** | Rob Bell (GitHub: [@robert-bell](https://github.com/robert-bell) / Slack: `Rob Bell`) |
 | **Notebooks WG Liaison(s)** | Christian Heusel (GitHub: [@christian-heusel](https://github.com/christian-heusel) / Slack: `Christian Heusel`) |
 | **Kubeflow Community Distribution WG Liaison(s)** | Tarek Abouzeid (GitHub: [@tarekabouzeid](https://github.com/tarekabouzeid) / Slack: `Tarek Abouzeid`) |
 | **Pipelines WG Liaison(s)** | Alyssa Goins (GitHub: [@alyssacgoins](https://github.com/alyssacgoins) / Slack: `Alyssa Goins`) |
