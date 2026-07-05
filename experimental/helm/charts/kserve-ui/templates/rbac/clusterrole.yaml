@@ -1,13 +1,14 @@
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: kserve-models-web-application
-  namespace: kserve
----
+{{- if .Values.rbac.clusterRole.create }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: kserve-models-web-application-cluster-role
+  name: {{ include "kserve-models-web-app.clusterRoleName" . }}
+  labels:
+    {{- include "kserve-models-web-app.labels" . | nindent 4 }}
+    {{- include "kserve-models-web-app.kustomizeLabels" . | nindent 4 }}
+    {{- if .Values.kubeflow.enabled }}
+    {{- include "kserve-models-web-app.kserveLabels" . | nindent 4 }}
+    {{- end }}
 rules:
 - apiGroups:
   - authorization.k8s.io
@@ -21,10 +22,17 @@ rules:
   - namespaces
   - pods
   - pods/log
+  verbs:
+  - get
+  - list
+- apiGroups:
+  - ""
+  resources:
   - events
   verbs:
   - get
   - list
+  - watch
 - apiGroups:
   - serving.kserve.io
   resources:
@@ -57,16 +65,7 @@ rules:
   verbs:
   - get
   - list
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: kserve-models-web-application-binding
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: kserve-models-web-application-cluster-role
-subjects:
-- kind: ServiceAccount
-  name: kserve-models-web-application
-  namespace: kserve
+{{- with .Values.rbac.clusterRole.rules }}
+{{- toYaml . | nindent 0 }}
+{{- end }}
+{{- end }}

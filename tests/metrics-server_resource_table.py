@@ -35,8 +35,11 @@ COMPONENT_RULES = {
     # },
     "Volumes Web Application": {"keywords": ["volumes-web-app"]},
     "Katib": {"keywords": ["katib"]},
-    "KServe": {"keywords": ["kserve", "predictor"], "exclude": ["models-web-app"]},
-    "KServe Models Web Application": {"keywords": ["models-web-app"]},
+    "KServe": {
+        "keywords": ["kserve", "predictor"],
+        "exclude": ["models-web-application", "kserve-ui"],
+    },
+    "KServe UI": {"keywords": ["models-web-application", "kserve-ui"]},
     "Kubeflow Pipelines": {
         "keywords": [
             "ml-pipeline",
@@ -79,7 +82,7 @@ COMPONENT_ORDER = [
     "Volumes Web Application",
     "Katib",
     "KServe",
-    "KServe Models Web Application",
+    "KServe UI",
     "Kubeflow Pipelines",
     "Kubeflow Model Registry",
     "Spark Operator",

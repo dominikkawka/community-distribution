@@ -1,5 +1,7 @@
 resources:
-  - rbac.yaml
+  - service-account.yaml
+  - cluster-role.yaml
+  - cluster-role-binding.yaml
   - service.yaml
   - deployment.yaml
 namespace: kserve
@@ -7,7 +9,7 @@ namespace: kserve
 images:
   - name: kserve/models-web-app
     newName: ghcr.io/kserve/models-web-app
-    newTag: 0.18.0
+    newTag: 1.0.0
 configMapGenerator:
   - literals:
       - APP_DISABLE_AUTH="True"
