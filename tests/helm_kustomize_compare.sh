@@ -11,7 +11,7 @@ ROOT_DIRECTORY="$(dirname "$SCRIPT_DIRECTORY")"
 if [[ -z "$COMPONENT" ]]; then
     echo "ERROR: Component is required"
     echo "Usage: $0 <component> <scenario>"
-    echo "Components: katib, hub, kserve-models-web-application, cert-manager"
+    echo "Components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform"
     exit 1
 fi
 
@@ -20,7 +20,7 @@ case "$COMPONENT" in
     "katib")
         CHART_DIRECTORY="$ROOT_DIRECTORY/experimental/helm/charts/katib"
         MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/katib/upstream"
-        
+
         declare -A KUSTOMIZE_PATHS=(
             ["standalone"]="$MANIFESTS_DIRECTORY/installs/katib-standalone"
             ["cert-manager"]="$MANIFESTS_DIRECTORY/installs/katib-cert-manager"
@@ -30,7 +30,7 @@ case "$COMPONENT" in
             ["standalone-postgres"]="$MANIFESTS_DIRECTORY/installs/katib-standalone-postgres"
             ["with-kubeflow"]="$MANIFESTS_DIRECTORY/installs/katib-with-kubeflow"
         )
-        
+
         declare -A HELM_VALUES=(
             ["standalone"]="$CHART_DIRECTORY/ci/values-standalone.yaml"
             ["cert-manager"]="$CHART_DIRECTORY/ci/values-cert-manager.yaml"
@@ -42,7 +42,7 @@ case "$COMPONENT" in
             ["enterprise"]="$CHART_DIRECTORY/ci/values-enterprise.yaml"
             ["production"]="$CHART_DIRECTORY/ci/values-production.yaml"
         )
-        
+
         declare -A NAMESPACES=(
             ["standalone"]="kubeflow"
             ["cert-manager"]="kubeflow"
@@ -55,11 +55,11 @@ case "$COMPONENT" in
             ["production"]="kubeflow"
         )
         ;;
-        
+
     "hub")
         CHART_DIRECTORY="$ROOT_DIRECTORY/experimental/helm/charts/hub"
         MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/hub/upstream"
-        
+
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIRECTORY/base"
             ["overlay-postgres"]="$MANIFESTS_DIRECTORY/overlays/postgres"
@@ -76,7 +76,7 @@ case "$COMPONENT" in
             ["istio"]="$MANIFESTS_DIRECTORY/options/istio"
             ["csi"]="$MANIFESTS_DIRECTORY/options/csi"
         )
-        
+
         declare -A HELM_VALUES=(
             ["base"]="$CHART_DIRECTORY/ci/ci-values.yaml"
             ["overlay-postgres"]="$CHART_DIRECTORY/ci/values-postgres.yaml"
@@ -93,7 +93,7 @@ case "$COMPONENT" in
             ["istio"]="$CHART_DIRECTORY/ci/values-istio.yaml"
             ["csi"]="$CHART_DIRECTORY/ci/values-csi.yaml"
         )
-        
+
         declare -A NAMESPACES=(
             ["base"]="kubeflow"
             ["overlay-postgres"]="kubeflow"
@@ -111,21 +111,20 @@ case "$COMPONENT" in
             ["csi"]="kubeflow"
         )
         ;;
-        
     "kserve-models-web-application")
         CHART_DIRECTORY="$ROOT_DIRECTORY/experimental/helm/charts/kserve-ui"
         MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/applications/kserve/kserve-ui/upstream"
-        
+
         declare -A KUSTOMIZE_PATHS=(
             ["base"]="$MANIFESTS_DIRECTORY/base"
             ["kubeflow"]="$MANIFESTS_DIRECTORY/overlays/kubeflow"
         )
-        
+
         declare -A HELM_VALUES=(
             ["base"]="$CHART_DIRECTORY/ci/base-values.yaml"
             ["kubeflow"]="$CHART_DIRECTORY/ci/kubeflow-values.yaml"
         )
-        
+
         declare -A NAMESPACES=(
             ["base"]="kserve"
             ["kubeflow"]="kubeflow"
@@ -155,9 +154,54 @@ case "$COMPONENT" in
         )
         ;;
 
+    "kubeflow-namespaces")
+        CHART_DIRECTORY="$ROOT_DIRECTORY/common/kubeflow-namespace/helm"
+        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/common/kubeflow-namespace"
+        PLATFORM_NAMESPACE_KUSTOMIZE_PATHS=(
+            "$MANIFESTS_DIRECTORY/base"
+            "$ROOT_DIRECTORY/common/cert-manager/base"
+            "$ROOT_DIRECTORY/common/istio/istio-namespace/base"
+            "$ROOT_DIRECTORY/common/oauth2-proxy/base"
+            "$ROOT_DIRECTORY/common/dex/base"
+        )
+        PLATFORM_NAMESPACE_PATHS="$(printf '%s\n' "${PLATFORM_NAMESPACE_KUSTOMIZE_PATHS[@]}")"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["base"]="$MANIFESTS_DIRECTORY/base"
+            ["platform-namespaces"]="$PLATFORM_NAMESPACE_PATHS"
+        )
+
+        declare -A HELM_VALUES=(
+            ["base"]="$CHART_DIRECTORY/ci/values-default.yaml"
+            ["platform-namespaces"]="$CHART_DIRECTORY/ci/values-default.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["base"]="default"
+            ["platform-namespaces"]="default"
+        )
+        ;;
+
+    "kubeflow-platform")
+        CHART_DIRECTORY="$ROOT_DIRECTORY/common/kubeflow-roles/helm"
+        MANIFESTS_DIRECTORY="$ROOT_DIRECTORY/common/kubeflow-roles"
+
+        declare -A KUSTOMIZE_PATHS=(
+            ["base"]="$MANIFESTS_DIRECTORY/base"
+        )
+
+        declare -A HELM_VALUES=(
+            ["base"]="$CHART_DIRECTORY/ci/values-default.yaml"
+        )
+
+        declare -A NAMESPACES=(
+            ["base"]="kubeflow-system"
+        )
+        ;;
+
     *)
         echo "ERROR: Unknown component: $COMPONENT"
-        echo "Supported components: katib, hub, kserve-models-web-application, cert-manager"
+        echo "Supported components: katib, hub, kserve-models-web-application, cert-manager, kubeflow-namespaces, kubeflow-platform"
         exit 1
         ;;
 esac
@@ -174,16 +218,18 @@ fi
 KUSTOMIZE_PATH="${KUSTOMIZE_PATHS[$SCENARIO]}"
 HELM_VALUES_ARGUMENTS="${HELM_VALUES[$SCENARIO]}"
 NAMESPACE="${NAMESPACES[$SCENARIO]}"
-mapfile -t KUSTOMIZE_ROOTS <<< "$KUSTOMIZE_PATH"
 
 echo "Comparing $COMPONENT manifests for scenario: $SCENARIO"
 
-for path in "${KUSTOMIZE_ROOTS[@]}"; do
+while IFS= read -r path; do
+    if [ -z "$path" ]; then
+        continue
+    fi
     if [ ! -d "$path" ]; then
         echo "ERROR: Kustomize path does not exist: $path"
         exit 1
     fi
-done
+done <<< "$KUSTOMIZE_PATH"
 
 if [ ! -d "$CHART_DIRECTORY" ]; then
     echo "ERROR: Helm chart directory does not exist: $CHART_DIRECTORY"
@@ -200,13 +246,17 @@ HELM_OUTPUT="/tmp/helm-${COMPONENT}-${SCENARIO}.yaml"
 
 cd "$ROOT_DIRECTORY"
 : > "$KUSTOMIZE_OUTPUT"
-for i in "${!KUSTOMIZE_ROOTS[@]}"; do
-    path="${KUSTOMIZE_ROOTS[$i]}"
-    if [ "$i" -gt 0 ]; then
+path_index=0
+while IFS= read -r path; do
+    if [ -z "$path" ]; then
+        continue
+    fi
+    if [ "$path_index" -gt 0 ]; then
         printf "\n---\n" >> "$KUSTOMIZE_OUTPUT"
     fi
     kustomize build "$path" >> "$KUSTOMIZE_OUTPUT"
-done
+    path_index=$((path_index + 1))
+done <<< "$KUSTOMIZE_PATH"
 
 # Generate Helm manifests (different approach for KServe UI)
 cd "$ROOT_DIRECTORY"
@@ -229,6 +279,10 @@ elif [[ "$COMPONENT" == "cert-manager" ]]; then
     helm template cert-manager . \
         --namespace "$NAMESPACE" \
         --include-crds \
+        --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
+elif [[ "$COMPONENT" == "kubeflow-namespaces" || "$COMPONENT" == "kubeflow-platform" ]]; then
+    helm template "$COMPONENT" "$CHART_DIRECTORY" \
+        --namespace "$NAMESPACE" \
         --values "$HELM_VALUES_ARGUMENTS" > "$HELM_OUTPUT"
 else
     cd "$CHART_DIRECTORY"
