@@ -9,10 +9,9 @@
 | **Notebooks WG Liaison(s)** | Christian Heusel (GitHub: [@christian-heusel](https://github.com/christian-heusel) / Slack: `Christian Heusel`) |
 | **Kubeflow Community Distribution WG Liaison(s)** | Tarek Abouzeid (GitHub: [@tarekabouzeid](https://github.com/tarekabouzeid) / Slack: `Tarek Abouzeid`) |
 | **Pipelines WG Liaison(s)** | Alyssa Goins (GitHub: [@alyssacgoins](https://github.com/alyssacgoins) / Slack: `Alyssa Goins`) |
-| **Spark Operator (WG Data)** |  |
+| **Spark Operator (WG Data)** | Manabu McClosley (GitHub: [@nabuskey](https://github.com/nabuskey) / Slack: `Manabu McCloskey`) |
 | **Kubeflow Hub (WG Data)** | Adysen Rothman (GitHub: [@adysenrothman](https://github.com/adysenrothman) / Slack: `Adysen Rothman`) |
 | **KServe Liaison(s)** | Vraj Bhatt (GitHub: [@vrajjbhatt](https://github.com/vrajjbhatt) / Slack: `Vraj Bhatt`) |
-| **KDC Liaison(s)** | |
 
 - The definition of the release team roles and responsibilities can be found at [release handbook](../kubeflow-community-distribution-release-handbook.md)
 - The timeline for the release can be found [here](README.md).
